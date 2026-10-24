@@ -11,8 +11,8 @@ python serve.py            # http://127.0.0.1:8000   (HOST / PORT can be set in 
 
 ## Option B — Docker
 ```bash
-docker build -t janmat .
-docker run -p 8000:8000 --env-file .env -v janmat_uploads:/app/instance janmat
+docker build -t e.v. .
+docker run -p 8000:8000 --env-file .env -v e.v._uploads:/app/instance janmat
 ```
 Use `DB_HOST=host.docker.internal` (Windows/Mac) or the database server's address in `.env`.
 

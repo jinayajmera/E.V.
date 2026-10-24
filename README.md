@@ -1,4 +1,4 @@
-# Janmat — online voting application (final version)
+# E.V. - Online voting application
 
 Flask (Python) web application on top of a MySQL 8 database named `evoting`.
 Voters register with an identity number and photograph, an election officer verifies them, they vote once,
