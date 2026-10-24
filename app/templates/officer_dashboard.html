@@ -1,0 +1,39 @@
+{% extends 'base.html' %}{% from '_macros.html' import tag, pagehead %}
+{% block title %}Control room{% endblock %}
+{% block pagehead %}{% call pagehead('Control room', 'Good to see you, <em>' ~ user_name.split()[0] ~ '</em>', 'Everything that needs attention, at a glance.') %}
+  <a class="btn light" href="{{ url_for('officer.verification') }}">Review voters{% if stats.pending %} ({{ stats.pending }}){% endif %}</a>
+  <a class="btn ghost" href="{{ url_for('officer.crud_new', entity='elections') }}">New election</a>
+{% endcall %}{% endblock %}
+{% block content %}
+<div class="grid g4 pull">
+  <div class="kpi {{ 'hot' if stats.pending }}"><a href="{{ url_for('officer.verification') }}"><b>{{ stats.pending }}</b><span>awaiting verification</span></a></div>
+  <div class="kpi"><a href="{{ url_for('officer.voters_list') }}"><b>{{ stats.verified }}<small class="muted fs-lg"> / {{ stats.voters }}</small></b><span>verified voters</span></a></div>
+  <div class="kpi"><b>{{ stats.votes }}</b><span>votes cast · {{ stats.active }} election{{ '' if stats.active == 1 else 's' }} active</span></div>
+  <div class="kpi"><a href="{{ url_for('officer.security_log') }}"><b>{{ stats.alerts }}</b><span>security alerts (24 h)</span></a></div>
+</div>
+
+<div class="grid g2 mt3">
+  <div class="panel"><div class="ptitle"><h3>Elections</h3><a class="btn sm ghost" href="{{ url_for('officer.crud_list', entity='elections') }}">Manage</a></div>
+    {% for s in summary %}
+    <div class="check"><div><b>{{ s.ElectionName }}</b><div class="muted tiny">{{ s.ElectionCode }} · {{ s.VotesCast }} / {{ s.EligibleVoters }} voted</div>
+      <div class="bar mt1"><i data-w="{{ s.turnout }}"></i></div></div>
+      <div class="row-gap">{{ tag(s.Status) }}<a class="btn sm ghost" href="{{ url_for('officer.election_detail', eid=s.ElectionID) }}">Open</a></div></div>
+    {% else %}<div class="empty">No elections yet.</div>{% endfor %}
+  </div>
+  <div class="panel"><div class="ptitle"><h3>Voters by constituency</h3><a class="btn sm ghost" href="{{ url_for('officer.crud_list', entity='constituencies') }}">View</a></div>
+    {% for r in by_const %}<div class="barrow"><span>{{ r.label }}</span><div class="bar"><i data-w="{{ r.pct }}"></i></div><b class="right">{{ r.n }}</b></div>{% endfor %}
+  </div>
+</div>
+
+<div class="grid g2 mt3">
+  <div class="panel"><div class="ptitle"><h3>Verification queue</h3><a class="btn sm ghost" href="{{ url_for('officer.verification') }}">Open</a></div>
+    {% for v in queue %}<div class="check"><div class="person"><img class="avatar" src="{{ url_for('main.media_voter', vid=v.VoterID) }}" alt=""><div><b>{{ v.Name }}</b><small>registered {{ v.RegistrationDate }}</small></div></div>
+      <div class="row-gap">{{ tag(v.VerificationStatus) }}<a class="btn sm" href="{{ url_for('officer.voter_detail', vid=v.VoterID) }}">Review</a></div></div>
+    {% else %}<div class="empty">Nobody is waiting. 🎉</div>{% endfor %}
+  </div>
+  <div class="panel"><div class="ptitle"><h3>Recent activity</h3><a class="btn sm ghost" href="{{ url_for('officer.audit') }}">Audit log</a></div>
+    {% for a in audit %}<div class="check"><div><b>{{ a.TableName }} · {{ a.Action }}</b><div class="muted tiny">{{ a.Details }}</div></div><span class="muted tiny nowrap">{{ a.EventTime }}</span></div>
+    {% else %}<div class="empty">Nothing yet.</div>{% endfor %}
+  </div>
+</div>
+{% endblock %}

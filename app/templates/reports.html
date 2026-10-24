@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% from '_macros.html' import pagehead %}
+{% block title %}Reports{% endblock %}
+{% block pagehead %}{{ pagehead('Insights', '<em>Reports</em>', 'Ready-made analysis of voters, elections, turnout and results. Every report can be exported to CSV.') }}{% endblock %}
+{% block content %}
+{% for g, items in groups.items() %}
+<div class="panel mb2 pull"><h3>{{ g }}</h3>
+  {% for r in items %}<div class="check"><div><b>{{ r.title }}</b><div class="muted tiny">Report {{ r.no }}</div></div><a class="btn sm" href="{{ url_for('officer.report_run', no=r.no) }}">Run</a></div>{% endfor %}</div>
+{% endfor %}
+{% endblock %}

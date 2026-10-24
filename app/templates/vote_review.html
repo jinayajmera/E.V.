@@ -1,0 +1,13 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, pagehead %}
+{% block title %}Confirm your vote{% endblock %}
+{% block pagehead %}{{ pagehead(election.ElectionCode, 'Confirm <em>your vote</em>', 'Once submitted, a vote cannot be changed or withdrawn.') }}{% endblock %}
+{% block content %}
+<div class="narrow pull"><div class="panel">
+  <div class="person mb2"><img class="avatar lg" src="{{ url_for('main.media_candidate', cid=choice.CandidateID) }}" alt="{{ choice.CandidateName }}">
+    <div><small>You are voting for</small><b class="h-md">{{ choice.CandidateName }}</b><small>{{ choice.PartyName }} · {{ const }}</small></div></div>
+  <div class="row-gap">
+    <form method="post" action="{{ url_for('voter.vote_cast', eid=election.ElectionID) }}" data-once>{{ csrf() }}<input type="hidden" name="candidate_id" value="{{ choice.CandidateID }}"><button class="btn lg accent" type="submit">Cast my vote</button></form>
+    <a class="btn lg ghost" href="{{ url_for('voter.vote', eid=election.ElectionID) }}">Change choice</a>
+  </div>
+</div></div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}{% from '_macros.html' import tag, pagehead, post_btn %}
+{% block title %}{{ spec.plural }}{% endblock %}
+{% block pagehead %}{% call pagehead('Manage', spec.plural, rows|length ~ ' record' ~ ('' if rows|length == 1 else 's')) %}
+  <a class="btn accent" href="{{ url_for('officer.crud_new', entity=entity) }}">+ Add {{ spec.title|lower }}</a>{% endcall %}{% endblock %}
+{% block content %}
+<form class="filters pull" method="get" role="search"><input type="search" name="q" value="{{ q }}" placeholder="Search {{ spec.plural|lower }}…" aria-label="Search"><button class="btn sm" type="submit">Search</button>{% if q %}<a class="btn sm ghost" href="{{ url_for('officer.crud_list', entity=entity) }}">Clear</a>{% endif %}</form>
+<div class="tablewrap"><table>
+<thead><tr>{% for k, l in spec.columns %}<th>{{ l }}</th>{% endfor %}<th></th></tr></thead><tbody>
+{% for r in rows %}<tr>
+  {% for k, l in spec.columns %}<td>{% if k in ('AccountStatus','Status') %}{{ tag(r[k]) }}{% else %}{{ '' if r[k] is none else r[k] }}{% endif %}</td>{% endfor %}
+  <td><div class="acts">
+    {% if entity == 'elections' %}<a class="btn sm" href="{{ url_for('officer.election_detail', eid=r[spec.pk]) }}">Manage</a>{% endif %}
+    <a class="btn sm ghost" href="{{ url_for('officer.crud_edit', entity=entity, rid=r[spec.pk]) }}">Edit</a>
+    {% if 'AccountStatus' in r %}{% if r.AccountStatus == 'Active' %}{{ post_btn(url_for('officer.crud_status', entity=entity, rid=r[spec.pk]), 'Suspend', 'ghost', None, 'status', 'Suspended') }}{% else %}{{ post_btn(url_for('officer.crud_status', entity=entity, rid=r[spec.pk]), 'Activate', 'ghost', None, 'status', 'Active') }}{% endif %}{% endif %}
+    {{ post_btn(url_for('officer.crud_delete', entity=entity, rid=r[spec.pk]), 'Delete', 'danger', 'Delete this record permanently?') }}
+  </div></td></tr>
+{% else %}<tr><td colspan="{{ spec.columns|length + 1 }}" class="empty">Nothing found.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

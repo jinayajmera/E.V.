@@ -1,0 +1,17 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, pagehead %}
+{% block title %}Cast your vote{% endblock %}
+{% block pagehead %}{{ pagehead(election.ElectionCode, election.ElectionName ~ ' — <em>your ballot</em>', 'Constituency: ' ~ const ~ '. Choose one candidate, then review before you submit.') }}{% endblock %}
+{% block content %}
+<form method="post" action="{{ url_for('voter.vote_review', eid=election.ElectionID) }}" class="pull">{{ csrf() }}
+  <div class="grid g3">
+  {% for c in ballot %}
+    <label class="cand">
+      <input type="radio" name="candidate_id" value="{{ c.CandidateID }}" required>
+      <img src="{{ url_for('main.media_candidate', cid=c.CandidateID) }}" alt="{{ c.CandidateName }}" loading="lazy">
+      <span class="b"><strong>{{ c.CandidateName }}</strong><span>{{ c.PartyName }}{% if c.Symbol %} · {{ c.Symbol }}{% endif %}</span><span class="sel"><i></i> Select</span></span>
+    </label>
+  {% else %}<div class="panel soft center muted span-all">No approved candidates for your constituency.</div>{% endfor %}
+  </div>
+  {% if ballot %}<div class="row-gap mt3"><button class="btn lg" type="submit">Review my choice</button><a class="btn lg ghost" href="{{ url_for('voter.dashboard') }}">Cancel</a></div>{% endif %}
+</form>
+{% endblock %}

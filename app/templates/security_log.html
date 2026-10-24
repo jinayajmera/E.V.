@@ -1,0 +1,20 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, tag, pagehead, pager, post_btn %}
+{% block title %}Security{% endblock %}
+{% block pagehead %}{{ pagehead('Protection', 'Security <em>log</em>', 'Sign-ins, lock-outs, blocked duplicate registrations and rejected forms.') }}{% endblock %}
+{% block content %}
+<div class="grid g3 pull">
+  <div class="panel"><h3>Last 7 days</h3>{% for s in summary %}<div class="check"><span>{{ tag(s.EventType) }}</span><b>{{ s.n }}</b></div>{% else %}<p class="muted mb0">Quiet.</p>{% endfor %}</div>
+  <div class="panel span-2"><h3>Locked accounts</h3>
+    {% for l in locked %}<div class="check"><div><b>{{ l.Username }}</b> <span class="muted tiny">{{ l.Role }} · {{ l.Fails }} wrong passwords</span></div>
+      <form method="post" action="{{ url_for('officer.security_unlock') }}">{{ csrf() }}<input type="hidden" name="role" value="{{ l.Role }}"><input type="hidden" name="username" value="{{ l.Username }}"><button class="btn sm accent" type="submit">Unlock</button></form></div>
+    {% else %}<p class="muted mb0">No account is currently locked.</p>{% endfor %}
+    <hr class="mt2 mb2"><form method="post" action="{{ url_for('officer.security_unlock') }}" class="row-gap">{{ csrf() }}<select name="role" aria-label="Role" class="inl"><option>voter</option><option>officer</option></select><input name="username" placeholder="Username to unlock" class="inl" maxlength="50" aria-label="Username"><button class="btn sm" type="submit">Unlock</button></form>
+  </div>
+</div>
+<form class="filters mt3" method="get" role="search"><input type="search" name="q" value="{{ q }}" placeholder="Username, IP address or text…" aria-label="Search">
+  <select name="type" data-autosubmit aria-label="Event"><option value="">All events</option>{% for x in types %}<option {% if t == x %}selected{% endif %}>{{ x }}</option>{% endfor %}</select><button class="btn sm" type="submit">Filter</button>{% if q or t %}<a class="btn sm ghost" href="{{ url_for('officer.security_log') }}">Clear</a>{% endif %}</form>
+<div class="tablewrap"><table><thead><tr><th>Time</th><th>Event</th><th>Role</th><th>User</th><th>IP address</th><th>Details</th></tr></thead><tbody>
+{% for e in rows %}<tr><td class="nowrap">{{ e.EventTime }}</td><td>{{ tag(e.EventType) }}</td><td>{{ e.Role or '—' }}</td><td>{{ e.Username or '—' }}</td><td class="mono">{{ e.IpAddress }}</td><td>{{ e.Details or '' }}</td></tr>
+{% else %}<tr><td colspan="6" class="empty">No events.</td></tr>{% endfor %}</tbody></table></div>
+{{ pager('officer.security_log', page, pages, total, qs) }}
+{% endblock %}

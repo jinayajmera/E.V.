@@ -1,0 +1,23 @@
+{% extends 'base.html' %}{% from '_macros.html' import tag, pagehead %}
+{% block title %}Results — {{ el.ElectionName }}{% endblock %}
+{% block pagehead %}{% call pagehead(el.ElectionCode, el.ElectionName ~ ' <em>results</em>', el.VotesCast|string ~ ' votes counted · ' ~ el.TurnoutPercent|string ~ '% turnout') %}
+  {% if el.Status == 'Closed' %}<a class="btn light" href="{{ url_for('main.results_csv', eid=el.ElectionID) }}">Download CSV</a><button class="btn ghost" type="button" data-print>Print</button>{% endif %}
+{% endcall %}{% endblock %}
+{% block content %}
+{% if el.Status != 'Closed' %}
+<div class="panel soft pull center"><h3>Results are not published yet</h3><p class="muted mb0">This election is {{ el.Status|lower }}. Results appear as soon as it is closed.</p></div>
+{% else %}
+{% for name, rows in groups.items() %}
+<div class="panel mb2 pull"><div class="ptitle"><h3>{{ name }}</h3></div>
+  {% for r in rows %}
+  <div class="result-row">
+    <img class="avatar" src="{{ url_for('main.media_candidate', cid=r.CandidateID) }}" alt="">
+    <div><div class="between"><b>{{ r.CandidateName }}</b>{% if r.ResultStatus == 'Winner' %}{{ tag('Winner') }}{% endif %}</div><div class="muted tiny">{{ r.PartyName }}</div>
+      <div class="bar"><i class="{{ 'win' if r.ResultStatus == 'Winner' }}" data-w="{{ r.pct }}"></i></div></div>
+    <div class="votes">{{ r.VoteCount }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}<div class="panel soft center muted">No results were recorded.</div>{% endfor %}
+{% endif %}
+{% endblock %}

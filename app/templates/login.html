@@ -1,0 +1,20 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}
+{% block title %}Sign in{% endblock %}
+{% block fullwidth %}
+<div class="authwrap">
+  <div class="side"><h2>Welcome<br><em>back.</em></h2></div>
+  <div class="form"><div>
+    {% include '_flashes.html' %}
+    <h1 class="h-lg">Sign in</h1>
+    <p class="muted">Use the account you registered with.</p>
+    <div class="seg"><a class="{{ 'on' if login_role == 'voter' }}" href="{{ url_for('main.login', role='voter') }}">Voter</a><a class="{{ 'on' if login_role == 'officer' }}" href="{{ url_for('main.login', role='officer') }}">Election officer</a></div>
+    <form method="post" action="{{ url_for('main.login', role=login_role, next=request.args.get('next')) }}">{{ csrf() }}
+      <input type="hidden" name="role" value="{{ login_role }}">
+      <div class="field"><label for="username">Username</label><input id="username" name="username" value="{{ username or '' }}" autocomplete="username" required autofocus maxlength="50"></div>
+      <div class="field"><label for="password">Password</label><div class="pwbox"><input id="password" name="password" type="password" autocomplete="current-password" required><button type="button" data-pw-toggle="password">Show</button></div></div>
+      <button class="btn lg w100" type="submit">Sign in</button>
+    </form>
+    {% if login_role == 'voter' %}<p class="muted center mt2">New here? <a href="{{ url_for('main.register') }}"><b>Register to vote</b></a></p>{% endif %}
+  </div></div>
+</div>
+{% endblock %}

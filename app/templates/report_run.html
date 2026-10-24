@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% from '_macros.html' import pagehead %}
+{% block title %}{{ rep.title }}{% endblock %}
+{% block pagehead %}{% call pagehead('Report ' ~ rep.no, rep.title, rows|length ~ ' row' ~ ('' if rows|length == 1 else 's')) %}
+  {% if rows %}<a class="btn light" href="{{ url_for('officer.report_run', no=rep.no, format='csv') }}">Export CSV</a>{% endif %}<a class="btn ghost" href="{{ url_for('officer.reports') }}">All reports</a>
+{% endcall %}{% endblock %}
+{% block content %}
+{% if err %}<div class="flash danger pull">{{ err }}</div>{% endif %}
+<div class="tablewrap pull"><table><thead><tr>{% for c in cols %}<th>{{ c }}</th>{% endfor %}</tr></thead><tbody>
+{% for r in rows %}<tr>{% for c in cols %}<td>{{ '' if r[c] is none else r[c] }}</td>{% endfor %}</tr>
+{% else %}<tr><td colspan="{{ cols|length or 1 }}" class="empty">No rows.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

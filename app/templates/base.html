@@ -1,0 +1,81 @@
+{% from '_macros.html' import csrf %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ app_name }}{% endblock %}{% if self.title()|trim != app_name %} · {{ app_name }}{% endif %}</title>
+<meta name="description" content="{{ app_name }} - a secure, transparent way to vote online.">
+<meta name="theme-color" content="#0c0d10">
+<link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="hdr{% if hero %} hdr-over{% endif %}">
+  <div class="wrap">
+    <a class="brand" href="{{ url_for('main.home') }}"><i><svg viewBox="0 0 24 24" fill="none" stroke="#0c0d10" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l5 5L19 7"/></svg></i>{{ app_name }}</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav">Menu</button>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="{{ url_for('main.home') }}" {% if request.endpoint == 'main.home' %}class="on"{% endif %}>Home</a>
+      <a href="{{ url_for('main.results_index') }}" {% if request.endpoint in ('main.results_index','main.results') %}class="on"{% endif %}>Results</a>
+      {% if role == 'voter' %}
+        <a href="{{ url_for('voter.dashboard') }}" {% if request.endpoint in ('voter.dashboard','voter.vote') %}class="on"{% endif %}>My elections</a>
+        <a href="{{ url_for('voter.profile') }}" {% if request.endpoint == 'voter.profile' %}class="on"{% endif %}>Profile</a>
+      {% elif role == 'officer' %}
+        <a href="{{ url_for('officer.dashboard') }}">Control room</a>
+      {% endif %}
+      {% if role %}
+        <span class="who">{% if role == 'voter' %}<img src="{{ me_photo }}" alt="">{% endif %}<span>{{ user_name }}</span>
+          <form method="post" action="{{ url_for('main.logout') }}">{{ csrf() }}<button class="btn sm light" type="submit">Sign out</button></form></span>
+      {% else %}
+        <a href="{{ url_for('main.login', role='officer') }}">Officers</a>
+        <a class="btn sm ghost" href="{{ url_for('main.login') }}">Sign in</a>
+        <a class="btn sm light" href="{{ url_for('main.register') }}">Register</a>
+      {% endif %}
+    </nav>
+  </div>
+  {% if role == 'officer' %}
+  {% set ep = request.endpoint or '' %}
+  <div class="subnav"><div class="wrap" role="navigation" aria-label="Officer">
+    <a href="{{ url_for('officer.dashboard') }}" class="{{ 'on' if ep == 'officer.dashboard' }}">Overview</a>
+    <a href="{{ url_for('officer.verification') }}" class="{{ 'on' if ep == 'officer.verification' }}">Verification{% if nav_pending %} <span class="count">{{ nav_pending }}</span>{% endif %}</a>
+    <a href="{{ url_for('officer.voters_list') }}" class="{{ 'on' if ep.startswith('officer.voter') }}">Voters</a>
+    <a href="{{ url_for('officer.crud_list', entity='elections') }}" class="{{ 'on' if ep == 'officer.election_detail' or (ep.startswith('officer.crud') and entity is defined and entity == 'elections') }}">Elections</a>
+    <a href="{{ url_for('officer.nominations') }}" class="{{ 'on' if ep.startswith('officer.nomination') }}">Nominations</a>
+    <a href="{{ url_for('officer.eligibility') }}" class="{{ 'on' if ep.startswith('officer.eligib') }}">Eligibility</a>
+    <a href="{{ url_for('officer.crud_list', entity='candidates') }}" class="{{ 'on' if ep.startswith('officer.crud') and entity is defined and entity == 'candidates' }}">Candidates</a>
+    <a href="{{ url_for('officer.crud_list', entity='parties') }}" class="{{ 'on' if ep.startswith('officer.crud') and entity is defined and entity == 'parties' }}">Parties</a>
+    <a href="{{ url_for('officer.crud_list', entity='constituencies') }}" class="{{ 'on' if ep.startswith('officer.crud') and entity is defined and entity == 'constituencies' }}">Constituencies</a>
+    <a href="{{ url_for('officer.crud_list', entity='officers') }}" class="{{ 'on' if ep.startswith('officer.crud') and entity is defined and entity == 'officers' }}">Officers</a>
+    <a href="{{ url_for('officer.reports') }}" class="{{ 'on' if ep.startswith('officer.report') }}">Reports</a>
+    <a href="{{ url_for('officer.security_log') }}" class="{{ 'on' if ep.startswith('officer.security') }}">Security</a>
+    <a href="{{ url_for('officer.integrity') }}" class="{{ 'on' if ep.startswith('officer.integrity') }}">Integrity</a>
+    <a href="{{ url_for('officer.audit') }}" class="{{ 'on' if ep == 'officer.audit' }}">Audit</a>
+  </div></div>
+  {% endif %}
+</header>
+
+{% block pagehead %}{% endblock %}
+
+{% block fullwidth %}
+<main id="main"><div class="wrap">
+  {% include '_flashes.html' %}
+  {% block content %}{% endblock %}
+</div></main>
+{% endblock %}
+
+<footer class="ftr"><div class="wrap">
+  <div class="top">
+    <div class="big">Every voice counted. <em>Every vote private.</em></div>
+    <nav aria-label="Footer">
+      <a href="{{ url_for('main.home') }}">Home</a>
+      <a href="{{ url_for('main.results_index') }}">Results</a>
+      <a href="{{ url_for('main.register') }}">Register to vote</a>
+      <a href="{{ url_for('main.login') }}">Sign in</a>
+    </nav>
+  </div>
+  <div class="bot"><span>© {{ year }} {{ app_name }}. All rights reserved.</span><span>One person · one account · one vote.</span></div>
+</div></footer>
+<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, tag, pagehead, photo_field %}
+{% block title %}My profile{% endblock %}
+{% block pagehead %}{{ pagehead('Account', 'My <em>profile</em>') }}{% endblock %}
+{% block content %}
+<div class="grid g2 pull">
+  <div class="panel">
+    <div class="person mb2"><img class="avatar lg" src="{{ url_for('main.media_voter', vid=me.VoterID) }}" alt="Your photograph"><div><b class="h-md">{{ me.Name }}</b><small>@{{ me.Username }}</small><br>{{ tag(me.VerificationStatus) }}</div></div>
+    <dl class="kv"><dt>Constituency</dt><dd>{{ me.ConstituencyName }} — {{ me.District }}</dd><dt>Date of birth</dt><dd>{{ me.DOB }}</dd><dt>Voter ID</dt><dd>#{{ me.VoterID }}</dd>
+      <dt>Identity no.</dt><dd>{% if me.NationalIDLast4 and me.IdentitySource != 'Imported' %}•••••• {{ me.NationalIDLast4 }}{% else %}<span class="muted">not added</span>{% endif %}</dd>
+      <dt>Elections</dt><dd>{{ me.ElectionsRegistered }} registered · {{ me.VotesCast }} voted</dd></dl>
+    <hr class="mt2 mb2">
+    <form method="post" action="{{ url_for('voter.change_photo') }}" enctype="multipart/form-data">{{ csrf() }}
+      {{ photo_field('newphoto', 'Change photograph', current=None, required=True) }}
+      <button class="btn sm" type="submit">Upload new photograph</button>
+      <div class="hint mt1">Changing your photograph sends your account back for verification.</div></form>
+  </div>
+  <div>
+    <div class="panel" id="identity"{% if me.IdentitySource == 'Imported' or not me.NationalIDLast4 %}{% endif %}>
+      {% if me.IdentitySource == 'Imported' or not me.NationalIDLast4 %}
+      <h3>Add identity number</h3>
+      <form method="post" action="{{ url_for('voter.set_identity') }}">{{ csrf() }}
+        <div class="field"><label for="idn">Voter identity number</label><input id="idn" name="identity_number" required maxlength="14" placeholder="ABC1234567" data-upper><div class="hint">3 letters + 7 digits. It can be set only once.</div></div>
+        <button class="btn sm" type="submit">Save identity number</button></form>
+      {% else %}<h3>Identity number</h3><p class="muted">Your identity number is registered and locked. Contact the election office if it is wrong.</p>{% endif %}
+    </div>
+    <div class="panel mt2"><h3>Contact details</h3>
+      <form method="post">{{ csrf() }}
+        <div class="field"><label for="email">E-mail</label><input id="email" name="email" type="email" value="{{ values.email }}" required maxlength="100"></div>
+        <div class="field"><label for="phone">Mobile number</label><input id="phone" name="phone" value="{{ values.phone }}" required maxlength="15"></div>
+        <div class="field"><label for="address">Address</label><textarea id="address" name="address" maxlength="255">{{ values.address }}</textarea></div>
+        <button class="btn sm" type="submit">Save</button></form></div>
+    <div class="panel mt2"><h3>Change password</h3>
+      <form method="post" action="{{ url_for('voter.change_password') }}">{{ csrf() }}
+        <div class="field"><label for="op">Current password</label><input id="op" name="old_password" type="password" required autocomplete="current-password"></div>
+        <div class="field"><label for="np">New password</label><input id="np" name="new_password" type="password" required autocomplete="new-password" data-strength="pwb2"><div class="strength" id="pwb2"><i></i></div></div>
+        <div class="field"><label for="np2">Repeat new password</label><input id="np2" name="new_password2" type="password" required autocomplete="new-password"></div>
+        <button class="btn sm" type="submit">Update password</button></form></div>
+  </div>
+</div>
+{% endblock %}

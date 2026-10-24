@@ -1,0 +1,26 @@
+{% extends 'base.html' %}{% from '_macros.html' import tag, pagehead, pager, post_btn %}
+{% block title %}Voters{% endblock %}
+{% block pagehead %}{% call pagehead('Voters', 'Voter <em>register</em>', total ~ ' voter' ~ ('' if total == 1 else 's') ~ ' match the current filters.') %}
+  <a class="btn accent" href="{{ url_for('officer.voter_new') }}">+ Register voter</a>
+  <a class="btn ghost" href="{{ url_for('officer.voters_csv', **qs()) }}">Export CSV</a>
+{% endcall %}{% endblock %}
+{% block content %}
+<form class="filters pull" method="get" role="search">
+  <input type="search" name="q" value="{{ f.q }}" placeholder="Name, username, e-mail, ID last 4…" aria-label="Search voters">
+  <select name="verification" data-autosubmit aria-label="Verification"><option value="">Any verification</option>{% for s in ['Pending','Verified','Flagged','Rejected'] %}<option {% if f.verification == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+  <select name="account" data-autosubmit aria-label="Account"><option value="">Any account status</option>{% for s in ['Active','Suspended','Inactive'] %}<option {% if f.account == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+  <select name="constituency" data-autosubmit aria-label="Constituency"><option value="">All constituencies</option>{% for c in constituencies %}<option value="{{ c.ConstituencyID }}" {% if f.constituency == c.ConstituencyID %}selected{% endif %}>{{ c.ConstituencyName }}</option>{% endfor %}</select>
+  <button class="btn sm" type="submit">Search</button>{% if f.q or f.verification or f.account or f.constituency %}<a class="btn sm ghost" href="{{ url_for('officer.voters_list') }}">Clear</a>{% endif %}
+</form>
+<div class="tablewrap"><table>
+<thead><tr><th>Voter</th><th>Constituency</th><th>ID</th><th>Verification</th><th>Account</th><th>Votes</th><th></th></tr></thead><tbody>
+{% for v in rows %}<tr>
+  <td><div class="person"><img class="avatar" src="{{ url_for('main.media_voter', vid=v.VoterID) }}" alt="" loading="lazy"><div><b>{{ v.Name }}</b><small>@{{ v.Username }} · #{{ v.VoterID }}</small></div></div></td>
+  <td>{{ v.ConstituencyName }}</td>
+  <td class="mono">{% if v.NationalIDLast4 and v.IdentitySource != 'Imported' %}•••{{ v.NationalIDLast4 }}{% else %}<span class="muted">—</span>{% endif %}</td>
+  <td>{{ tag(v.VerificationStatus) }}</td><td>{{ tag(v.AccountStatus) }}</td><td>{{ v.VotesCast }}</td>
+  <td><div class="acts"><a class="btn sm" href="{{ url_for('officer.voter_detail', vid=v.VoterID) }}">Open</a><a class="btn sm ghost" href="{{ url_for('officer.voter_edit', vid=v.VoterID) }}">Edit</a></div></td></tr>
+{% else %}<tr><td colspan="7" class="empty">No voters found.</td></tr>{% endfor %}
+</tbody></table></div>
+{{ pager('officer.voters_list', page, pages, total, qs) }}
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, pagehead, photo_field %}
+{% block title %}Register{% endblock %}
+{% block pagehead %}{{ pagehead('Voter registration', 'Register to <em>vote</em>', 'One account per person. Your identity number and photograph are checked by an election officer before you can vote.') }}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="narrow pull" autocomplete="off">{{ csrf() }}
+ <div class="panel">
+  <h3>About you</h3>
+  <div class="fgrid">
+    <div class="field full"><label for="name">Full name <span class="req">*</span></label><input id="name" name="name" value="{{ values.name or '' }}" required maxlength="100" autocomplete="name"></div>
+    <div class="field"><label for="dob">Date of birth <span class="req">*</span></label><input id="dob" name="dob" type="date" value="{{ values.dob or '' }}" required></div>
+    <div class="field"><label for="gender">Gender <span class="req">*</span></label><select id="gender" name="gender" required><option value="">Select…</option>{% for g in ['Male','Female','Other'] %}<option {% if values.gender == g %}selected{% endif %}>{{ g }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="email">E-mail <span class="req">*</span></label><input id="email" name="email" type="email" value="{{ values.email or '' }}" required maxlength="100" autocomplete="email"></div>
+    <div class="field"><label for="phone">Mobile number <span class="req">*</span></label><input id="phone" name="phone" inputmode="numeric" value="{{ values.phone or '' }}" required maxlength="15" placeholder="10 digits"></div>
+    <div class="field full"><label for="address">Address</label><textarea id="address" name="address" rows="2" maxlength="255">{{ values.address or '' }}</textarea></div>
+    <div class="field full"><label for="constituency_id">Constituency <span class="req">*</span></label>
+      <select id="constituency_id" name="constituency_id" required><option value="">Select…</option>{% for c in constituencies %}<option value="{{ c.ConstituencyID }}" {% if values.constituency_id|string == c.ConstituencyID|string %}selected{% endif %}>{{ c.ConstituencyName }} — {{ c.District }}</option>{% endfor %}</select></div>
+  </div>
+ </div>
+ <div class="panel mt2">
+  <h3>Identity &amp; photograph</h3>
+  <div class="field"><label for="identity_number">Voter identity number <span class="req">*</span></label><input id="identity_number" name="identity_number" value="{{ values.identity_number or '' }}" required maxlength="14" placeholder="ABC1234567" data-upper autocapitalize="characters">
+    <div class="hint">3 letters followed by 7 digits. Only one account can ever use a number. It is stored in protected form — never in plain text.</div></div>
+  {{ photo_field('photo', 'Your photograph') }}
+ </div>
+ <div class="panel mt2">
+  <h3>Account</h3>
+  <div class="fgrid">
+    <div class="field full"><label for="username">Username <span class="req">*</span></label><input id="username" name="username" value="{{ values.username or '' }}" required maxlength="50" autocomplete="username"><div class="hint">3–50 letters, digits, “_” or “.”</div></div>
+    <div class="field"><label for="password">Password <span class="req">*</span></label><div class="pwbox"><input id="password" name="password" type="password" required autocomplete="new-password" data-strength="pwbar"><button type="button" data-pw-toggle="password">Show</button></div><div class="strength" id="pwbar"><i></i></div></div>
+    <div class="field"><label for="password2">Repeat password <span class="req">*</span></label><input id="password2" name="password2" type="password" required autocomplete="new-password"></div>
+  </div>
+  <div class="hint mb2">At least 8 characters with letters and numbers. Avoid common passwords and your own name.</div>
+  <button class="btn lg w100" type="submit">Submit registration</button>
+ </div>
+</form>
+{% endblock %}

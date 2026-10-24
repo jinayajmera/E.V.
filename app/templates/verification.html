@@ -1,0 +1,17 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, tag, pagehead %}
+{% block title %}Verification{% endblock %}
+{% block pagehead %}{{ pagehead('Verification', 'Who is <em>waiting</em>', rows|length ~ ' registration' ~ ('' if rows|length == 1 else 's') ~ ' need a decision. Check the photograph against the identity details, then verify or reject.') }}{% endblock %}
+{% block content %}
+<div class="grid g2 pull">
+{% for v in rows %}
+  <div class="panel">
+    <div class="person mb1"><img class="avatar lg" src="{{ url_for('main.media_voter', vid=v.VoterID) }}" alt="Photograph of {{ v.Name }}">
+      <div><b class="h-md">{{ v.Name }}</b><small>@{{ v.Username }} · {{ v.ConstituencyName }}</small><br>{{ tag(v.VerificationStatus) }}{% if v.Suspects %} <span class="tag warn">{{ v.Suspects }} possible duplicate{{ '' if v.Suspects == 1 else 's' }}</span>{% endif %}</div></div>
+    <dl class="kv mb1"><dt>Born</dt><dd>{{ v.DOB }}</dd><dt>Identity no.</dt><dd class="mono">•••••• {{ v.NationalIDLast4 or '—' }}</dd><dt>E-mail</dt><dd>{{ v.Email }}</dd><dt>Registered</dt><dd>{{ v.RegistrationDate }}</dd>{% if v.VerificationNote %}<dt>Note</dt><dd>{{ v.VerificationNote }}</dd>{% endif %}</dl>
+    <form method="post" action="{{ url_for('officer.voter_verify', vid=v.VoterID) }}">{{ csrf() }}<input type="hidden" name="next" value="queue">
+      <div class="field"><input name="note" maxlength="255" placeholder="Note (optional)" aria-label="Note"></div>
+      <div class="row-gap"><button class="btn accent" name="decision" value="Verified" type="submit">Verify</button><button class="btn danger" name="decision" value="Rejected" type="submit">Reject</button><a class="btn ghost" href="{{ url_for('officer.voter_detail', vid=v.VoterID) }}">Full record</a></div></form>
+  </div>
+{% else %}<div class="panel soft center span-all"><h3>All caught up</h3><p class="muted mb0">No registrations are waiting for verification.</p></div>{% endfor %}
+</div>
+{% endblock %}

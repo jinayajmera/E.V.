@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% from '_macros.html' import pagehead, pager %}
+{% block title %}Audit log{% endblock %}
+{% block pagehead %}{{ pagehead('Accountability', 'Audit <em>trail</em>', 'Every change to the voter register, elections, nominations and votes is recorded automatically.') }}{% endblock %}
+{% block content %}
+<form class="filters pull" method="get" role="search">
+  <input type="search" name="q" value="{{ q }}" placeholder="Record id or text…" aria-label="Search">
+  <select name="table" data-autosubmit aria-label="Table"><option value="">All records</option>{% for t in tables %}<option {% if table == t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select>
+  <select name="action" data-autosubmit aria-label="Action"><option value="">All actions</option>{% for a in ['INSERT','UPDATE','DELETE'] %}<option {% if action == a %}selected{% endif %}>{{ a }}</option>{% endfor %}</select>
+  <button class="btn sm" type="submit">Filter</button>{% if q or table or action %}<a class="btn sm ghost" href="{{ url_for('officer.audit') }}">Clear</a>{% endif %}
+</form>
+<div class="tablewrap"><table><thead><tr><th>#</th><th>Time</th><th>Record</th><th>Action</th><th>ID</th><th>Details</th></tr></thead><tbody>
+{% for a in rows %}<tr><td>{{ a.LogID }}</td><td class="nowrap">{{ a.EventTime }}</td><td>{{ a.TableName }}</td><td>{{ a.Action }}</td><td>{{ a.RecordID }}</td><td>{{ a.Details }}</td></tr>
+{% else %}<tr><td colspan="6" class="empty">No entries.</td></tr>{% endfor %}</tbody></table></div>
+{{ pager('officer.audit', page, pages, total, qs) }}
+{% endblock %}

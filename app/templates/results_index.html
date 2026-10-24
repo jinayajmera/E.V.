@@ -1,0 +1,20 @@
+{% extends 'base.html' %}{% from '_macros.html' import tag, pagehead %}
+{% block title %}Results{% endblock %}
+{% block pagehead %}{{ pagehead('Public results', 'Election <em>results</em>', 'Results are published as soon as an election is closed.') }}{% endblock %}
+{% block content %}
+<form class="filters pull" method="get" role="search">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search elections…" aria-label="Search">
+  <select name="status" data-autosubmit aria-label="Status"><option value="">All statuses</option>{% for s in ['Active','Upcoming','Closed'] %}<option {% if status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+  <button class="btn sm" type="submit">Search</button>{% if q or status %}<a class="btn sm ghost" href="{{ url_for('main.results_index') }}">Clear</a>{% endif %}
+</form>
+<div class="grid g3">
+{% for e in elections %}
+  <a class="ecard" href="{{ url_for('main.results' if e.Status == 'Closed' else 'main.election_public', eid=e.ElectionID) }}">
+    <div class="between">{{ tag(e.Status) }}<span class="muted tiny">{{ e.ElectionCode }}</span></div>
+    <h3>{{ e.ElectionName }}</h3>
+    <div class="meta"><span>{{ e.ElectionType }}</span><span>{{ e.StartDate }} → {{ e.EndDate }}</span></div>
+    <div class="foot"><span>{{ e.VotesCast }} votes · {{ e.TurnoutPercent }}% turnout</span><span>{{ 'Results →' if e.Status == 'Closed' else 'Details →' }}</span></div>
+  </a>
+{% else %}<div class="panel soft center muted span-all">No elections match.</div>{% endfor %}
+</div>
+{% endblock %}

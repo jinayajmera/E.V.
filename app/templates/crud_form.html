@@ -1,0 +1,22 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, field, pagehead %}
+{% block title %}{{ 'Add' if is_new else 'Edit' }} {{ spec.title|lower }}{% endblock %}
+{% block pagehead %}{{ pagehead(spec.plural, ('Add' if is_new else 'Edit') ~ ' <em>' ~ spec.title|lower ~ '</em>') }}{% endblock %}
+{% block content %}
+<div class="narrow pull">
+<form method="post" class="panel" autocomplete="off">{{ csrf() }}
+  <div class="fgrid">
+  {% for f in spec.fields %}
+    {% if is_new or f.edit %}<div class="{{ 'full' if f.type == 'textarea' }}">{{ field(f, values, choices) }}</div>
+    {% else %}<div class="field"><label>{{ f.label }}</label><input value="{{ values.get(f.name,'') }}" disabled></div>{% endif %}
+  {% endfor %}
+  </div>
+  <div class="row-gap"><button class="btn lg" type="submit">{{ 'Add' if is_new else 'Save changes' }}</button><a class="btn lg ghost" href="{{ url_for('officer.crud_list', entity=entity) }}">Cancel</a></div>
+</form>
+{% if spec.photo_upload and not is_new %}
+<form method="post" action="{{ url_for('officer.candidate_photo', cid=rid) }}" enctype="multipart/form-data" class="panel mt2">{{ csrf() }}
+  <h3>Candidate picture</h3>
+  <div class="photo-drop"><img id="cp" src="{{ url_for('main.media_candidate', cid=rid) }}" alt="Current picture"><div><input type="file" name="photo" accept="image/jpeg,image/png,image/webp" data-preview="cp" required><div class="hint">Shown on the ballot and results. JPG, PNG or WEBP, up to 3&nbsp;MB.</div></div></div>
+  <button class="btn sm mt1" type="submit">Upload picture</button>
+</form>{% endif %}
+</div>
+{% endblock %}

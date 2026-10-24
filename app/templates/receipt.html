@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% from '_macros.html' import pagehead %}
+{% block title %}Vote receipt{% endblock %}
+{% block pagehead %}{{ pagehead('Receipt', 'Vote <em>recorded</em>') }}{% endblock %}
+{% block content %}
+<div class="receipt pull">
+  <div class="top"><div class="tick"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0c0d10" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l5 5L19 7"/></svg></div>
+    <h2 class="mb0">Thank you for voting</h2><p class="mb0 dim">{{ r.ElectionName }}</p></div>
+  <div class="code">{{ r.code }}</div>
+  <div class="body">
+    <dl class="kv"><dt>Election</dt><dd>{{ r.ElectionCode }}</dd><dt>Recorded</dt><dd>{{ r.VoteTime }}</dd><dt>Receipt no.</dt><dd>#{{ r.VoteID }}</dd></dl>
+    <p class="muted tiny mt2">Keep this code as proof that your vote was counted. It does not reveal who you voted for.</p>
+    <div class="row-gap noprint"><button class="btn sm" type="button" data-print>Print</button><button class="btn sm ghost" type="button" data-copy="{{ r.code }}">Copy code</button><a class="btn sm ghost" href="{{ url_for('voter.dashboard') }}">Back</a></div>
+  </div>
+</div>
+{% endblock %}

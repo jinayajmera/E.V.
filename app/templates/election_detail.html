@@ -1,0 +1,18 @@
+{% extends 'base.html' %}{% from '_macros.html' import tag, pagehead, post_btn %}
+{% block title %}{{ el.ElectionName }}{% endblock %}
+{% block pagehead %}{% call pagehead(el.ElectionCode ~ ' · ' ~ el.ElectionType, el.ElectionName, el.StartDate|string ~ ' → ' ~ el.EndDate|string ~ ' · officer ' ~ el.OfficerName) %}
+  <a class="btn ghost" href="{{ url_for('officer.crud_edit', entity='elections', rid=el.ElectionID) }}">Edit</a>
+  {% if el.Status == 'Upcoming' %}{{ post_btn(url_for('officer.election_open', eid=el.ElectionID), 'Open voting', 'accent', 'Open this election for voting now?', sm=False) }}{% endif %}
+  {% if el.Status == 'Active' %}{{ post_btn(url_for('officer.election_close', eid=el.ElectionID), 'Close & publish results', 'light', 'Close the election and publish results? Voting ends immediately.', sm=False) }}{% endif %}
+  {% if el.Status == 'Closed' %}<a class="btn light" href="{{ url_for('main.results', eid=el.ElectionID) }}">Public results</a>{% endif %}
+{% endcall %}{% endblock %}
+{% block content %}
+<div class="grid g4 pull">
+  <div class="kpi"><b>{{ tag(el.Status) }}</b><span>status</span></div><div class="kpi"><b>{{ el.EligibleVoters }}</b><span>eligible voters</span></div>
+  <div class="kpi"><b>{{ el.VotesCast }}</b><span>votes · {{ el.TurnoutPercent }}% turnout</span></div><div class="kpi"><b>{{ el.ApprovedCandidates }}</b><span>approved · {{ el.PendingNominations }} pending</span></div>
+</div>
+<div class="panel mt3"><div class="ptitle"><h3>Nominations</h3><div class="row-gap"><a class="btn sm ghost" href="{{ url_for('officer.eligibility', election=el.ElectionID) }}">Voters</a><a class="btn sm" href="{{ url_for('officer.nominations', election=el.ElectionID) }}">Manage nominations</a></div></div>
+<div class="tablewrap"><table><thead><tr><th>Candidate</th><th>Party</th><th>Constituency</th><th>Status</th><th>Votes</th></tr></thead><tbody>
+{% for n in noms %}<tr><td><div class="person"><img class="avatar" src="{{ url_for('main.media_candidate', cid=n.CandidateID) }}" alt=""><b>{{ n.CandidateName }}</b></div></td><td>{{ n.PartyName }}</td><td>{{ n.ConstituencyName }}</td><td>{{ tag(n.Status) }}</td><td>{{ n.Votes }}</td></tr>
+{% else %}<tr><td colspan="5" class="empty">No nominations yet.</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

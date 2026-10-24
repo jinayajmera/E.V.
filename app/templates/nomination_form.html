@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, pagehead %}
+{% block title %}File nomination{% endblock %}
+{% block pagehead %}{{ pagehead('Candidates', 'File a <em>nomination</em>', 'New nominations start as Pending until approved.') }}{% endblock %}
+{% block content %}
+<form method="post" class="narrow pull panel">{{ csrf() }}
+  <div class="field"><label for="CandidateID">Candidate</label><select id="CandidateID" name="CandidateID" required><option value="">Select…</option>{% for c in candidates %}<option value="{{ c.CandidateID }}" {% if values.CandidateID|string == c.CandidateID|string %}selected{% endif %}>{{ c.Name }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="ElectionID">Election</label><select id="ElectionID" name="ElectionID" required><option value="">Select…</option>{% for e in elections %}<option value="{{ e.ElectionID }}" {% if values.ElectionID|string == e.ElectionID|string %}selected{% endif %}>{{ e.ElectionCode }} ({{ e.Status }})</option>{% endfor %}</select></div>
+  <div class="field"><label for="ConstituencyID">Constituency</label><select id="ConstituencyID" name="ConstituencyID" required><option value="">Select…</option>{% for c in constituencies %}<option value="{{ c.ConstituencyID }}" {% if values.ConstituencyID|string == c.ConstituencyID|string %}selected{% endif %}>{{ c.ConstituencyName }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="NominationDate">Nomination date</label><input id="NominationDate" name="NominationDate" type="date" value="{{ values.NominationDate }}" required></div>
+  <div class="row-gap"><button class="btn lg" type="submit">File nomination</button><a class="btn lg ghost" href="{{ url_for('officer.nominations') }}">Cancel</a></div>
+</form>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro tag(s) %}
+{% set m = {'Active':'ok','Eligible':'ok','Approved':'ok','Winner':'ok','Verified':'ok','Closed':'mute','Upcoming':'info','Pending':'warn','Voted':'ok','Suspended':'warn','Flagged':'warn','Inactive':'mute','Rejected':'bad','Not Eligible':'bad','Non-winner':'mute','LOGIN_OK':'ok','LOGIN_FAIL':'bad','LOGIN_BLOCKED':'bad','DUPLICATE_BLOCKED':'bad','CSRF_REJECTED':'bad','REGISTER':'info','UNLOCK':'warn'} %}
+<span class="tag {{ m.get(s,'') }}">{{ s }}</span>
+{% endmacro %}
+
+{% macro pagehead(eyebrow, title, sub=None) %}
+<section class="pagehead"><div class="wrap">
+  <div class="row"><div>
+    <span class="pill eyebrow">{{ eyebrow }}</span>
+    <h1>{{ title|safe }}</h1>
+    {% if sub %}<p>{{ sub }}</p>{% endif %}
+  </div>{% if caller %}<div class="actions">{{ caller() }}</div>{% endif %}</div>
+</div></section>
+{% endmacro %}
+
+{% macro post_btn(url, label, cls='ghost', confirm=None, name=None, value=None, sm=True) %}
+<form method="post" action="{{ url }}"{% if confirm %} data-confirm="{{ confirm }}"{% endif %}>
+  {{ csrf() }}{% if name %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endif %}
+  <button class="btn {{ 'sm' if sm }} {{ cls }}" type="submit">{{ label }}</button>
+</form>
+{% endmacro %}
+
+{% macro field(f, values, choices) %}
+<div class="field">
+  <label for="f_{{ f.name }}">{{ f.label }}{% if f.required %} <span class="req">*</span>{% endif %}</label>
+  {% if f.type == 'select' %}
+    <select id="f_{{ f.name }}" name="{{ f.name }}" {% if f.required %}required{% endif %}>
+      <option value="">Select…</option>
+      {% for v, l in choices[f.name] %}<option value="{{ v }}" {% if values.get(f.name)|string == v|string %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+  {% elif f.type == 'textarea' %}
+    <textarea id="f_{{ f.name }}" name="{{ f.name }}" rows="3" {% if f.maxlen %}maxlength="{{ f.maxlen }}"{% endif %}>{{ values.get(f.name,'') }}</textarea>
+  {% else %}
+    <input id="f_{{ f.name }}" name="{{ f.name }}"
+           type="{{ {'password':'password','date':'date','email':'email','number':'number'}.get(f.type,'text') }}"
+           value="{{ values.get(f.name,'') if f.type != 'password' else '' }}"
+           {% if f.maxlen %}maxlength="{{ f.maxlen }}"{% endif %} {% if f.required and f.type != 'password' %}required{% endif %}
+           {% if f.type == 'password' %}autocomplete="new-password"{% endif %}>
+  {% endif %}
+  {% if f.help %}<div class="hint">{{ f.help }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro pager(endpoint, page, pages, total, qs) %}
+<div class="pager"><span>{{ total }} result{{ '' if total == 1 else 's' }} · page {{ page }} of {{ pages }}</span>
+  <span class="pg">
+    {% if page > 1 %}{% set prev = qs(page=page-1) %}<a class="btn sm ghost" href="{{ url_for(endpoint, **prev) }}">← Previous</a>{% endif %}
+    {% if page < pages %}{% set nxt = qs(page=page+1) %}<a class="btn sm ghost" href="{{ url_for(endpoint, **nxt) }}">Next →</a>{% endif %}
+  </span></div>
+{% endmacro %}
+
+{% macro photo_field(id, label, current=None, required=True) %}
+<div class="field">
+  <label for="{{ id }}">{{ label }}{% if required %} <span class="req">*</span>{% endif %}</label>
+  <div class="photo-drop">
+    {% if current %}<img id="{{ id }}_pv" src="{{ current }}" alt="Current photograph">{% else %}<img id="{{ id }}_pv" hidden alt="Selected photograph"><div class="ph"></div>{% endif %}
+    <div><input id="{{ id }}" name="photo" type="file" accept="image/jpeg,image/png,image/webp" data-preview="{{ id }}_pv" {% if required %}required{% endif %}>
+      <div class="hint">A clear, front-facing photograph of your face. JPG, PNG or WEBP, up to 3&nbsp;MB.</div></div>
+  </div>
+</div>
+{% endmacro %}

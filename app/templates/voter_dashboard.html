@@ -1,0 +1,34 @@
+{% extends 'base.html' %}{% from '_macros.html' import tag, pagehead %}
+{% block title %}My elections{% endblock %}
+{% block pagehead %}{{ pagehead('Voter area', 'Hello, <em>' ~ me.Name.split()[0] ~ '</em>', 'Your elections, your receipts and your account in one place.') }}{% endblock %}
+{% block content %}
+{% if me.VerificationStatus != 'Verified' %}
+<div class="notice {{ 'bad' if me.VerificationStatus == 'Rejected' else 'warn' }} mb2">
+  <div><b>Identity {{ me.VerificationStatus|lower }}.</b>
+  {% if me.VerificationStatus == 'Pending' %} An election officer is checking your identity number and photograph. You will be able to vote as soon as you are verified.
+  {% elif me.VerificationStatus == 'Flagged' %} Your registration needs a manual review. Please contact the election office.
+  {% else %} {{ me.VerificationNote or 'Please contact the election office.' }}{% endif %}</div>
+</div>
+{% endif %}
+{% if not me.NationalIDLast4 or me.IdentitySource == 'Imported' %}
+<div class="notice warn mb2"><div><b>Add your identity number.</b> Your account was created before identity numbers were required. <a href="{{ url_for('voter.profile') }}#identity"><u>Add it in your profile</u></a> so an officer can verify you.</div></div>
+{% endif %}
+<div class="grid g3 pull">
+  {% for r in rows %}
+  <div class="panel">
+    <div class="between mb1">{{ tag(r.ElectionStatus) }}<span class="muted tiny">{{ r.ElectionCode }}</span></div>
+    <h3>{{ r.ElectionName }}</h3>
+    <p class="muted tiny">{{ r.ElectionType }} · {{ r.StartDate }} → {{ r.EndDate }}</p>
+    {% if r.HasVoted %}<div class="row-gap">{{ tag('Voted') }}<span class="muted tiny">{{ r.VotedTimestamp }}</span></div>
+    {% elif r.CanVote %}<a class="btn w100" href="{{ url_for('voter.vote', eid=r.ElectionID) }}">Vote now</a>
+    {% elif r.ElectionStatus == 'Closed' %}<a class="btn ghost w100" href="{{ url_for('main.results', eid=r.ElectionID) }}">View results</a>
+    {% elif r.ElectionStatus == 'Upcoming' %}<span class="muted">Opens on {{ r.StartDate }}</span>
+    {% else %}<span class="muted tiny">Voting unavailable — {{ 'verification pending' if me.VerificationStatus != 'Verified' else r.EligibilityStatus|lower }}.</span>{% endif %}
+  </div>
+  {% else %}<div class="panel soft center muted span-all">You are not registered for any election yet. An officer will add you once you are verified.</div>{% endfor %}
+</div>
+{% if receipts %}
+<div class="panel mt3"><div class="ptitle"><h3>My receipts</h3></div>
+  {% for x in receipts %}<div class="check"><div><b>{{ x.ElectionName }}</b><div class="muted tiny">{{ x.ElectionCode }} · {{ x.VoteTime }}</div></div><a class="btn sm ghost" href="{{ url_for('voter.receipt', vote_id=x.VoteID) }}">Open receipt</a></div>{% endfor %}
+</div>{% endif %}
+{% endblock %}

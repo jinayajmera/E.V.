@@ -1,0 +1,16 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, pagehead %}
+{% block title %}Edit voter{% endblock %}
+{% block pagehead %}{{ pagehead('Voter #' ~ v.VoterID, 'Edit <em>' ~ v.Name ~ '</em>', 'Identity number and photograph are changed from the voter page.') }}{% endblock %}
+{% block content %}
+<form method="post" class="narrow pull" autocomplete="off">{{ csrf() }}<div class="panel"><div class="fgrid">
+  <div class="field full"><label for="name">Full name</label><input id="name" name="name" value="{{ values.name }}" required maxlength="100"></div>
+  <div class="field"><label for="dob">Date of birth</label><input id="dob" name="dob" type="date" value="{{ values.dob }}" required></div>
+  <div class="field"><label for="gender">Gender</label><select id="gender" name="gender">{% for g in ['Male','Female','Other'] %}<option {% if values.gender == g %}selected{% endif %}>{{ g }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="email">E-mail</label><input id="email" name="email" type="email" value="{{ values.email }}" required maxlength="100"></div>
+  <div class="field"><label for="phone">Mobile number</label><input id="phone" name="phone" value="{{ values.phone }}" required maxlength="15"></div>
+  <div class="field full"><label for="address">Address</label><textarea id="address" name="address" maxlength="255">{{ values.address }}</textarea></div>
+  <div class="field"><label for="constituency_id">Constituency</label><select id="constituency_id" name="constituency_id">{% for c in constituencies %}<option value="{{ c.ConstituencyID }}" {% if values.constituency_id|string == c.ConstituencyID|string %}selected{% endif %}>{{ c.ConstituencyName }} — {{ c.District }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="account_status">Account status</label><select id="account_status" name="account_status">{% for s in ['Active','Suspended','Inactive'] %}<option {% if values.account_status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+  <div class="field full"><label for="password">New password</label><input id="password" name="password" type="password" autocomplete="new-password"><div class="hint">Leave blank to keep the current password.</div></div>
+</div><div class="row-gap"><button class="btn lg" type="submit">Save changes</button><a class="btn lg ghost" href="{{ url_for('officer.voter_detail', vid=v.VoterID) }}">Cancel</a></div></div></form>
+{% endblock %}

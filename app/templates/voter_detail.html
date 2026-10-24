@@ -1,0 +1,42 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, tag, pagehead, post_btn, photo_field %}
+{% block title %}{{ v.Name }}{% endblock %}
+{% block pagehead %}{% call pagehead('Voter #' ~ v.VoterID, v.Name, '@' ~ v.Username ~ ' · ' ~ v.ConstituencyName) %}
+  <a class="btn light" href="{{ url_for('officer.voter_edit', vid=v.VoterID) }}">Edit</a><a class="btn ghost" href="{{ url_for('officer.voters_list') }}">All voters</a>
+{% endcall %}{% endblock %}
+{% block content %}
+<div class="grid g2 pull">
+  <div class="panel">
+    <div class="grid g2">
+      <img class="avatar xl" src="{{ url_for('main.media_voter', vid=v.VoterID) }}" alt="Photograph of {{ v.Name }}">
+      <div><div class="row-gap mb1">{{ tag(v.VerificationStatus) }}{{ tag(v.AccountStatus) }}</div>
+        <dl class="kv"><dt>Gender</dt><dd>{{ v.Gender }}</dd><dt>Born</dt><dd>{{ v.DOB }}</dd><dt>E-mail</dt><dd>{{ v.Email }}</dd><dt>Phone</dt><dd>{{ v.Phone }}</dd>
+        <dt>Identity no.</dt><dd class="mono">{% if v.NationalIDLast4 and v.IdentitySource != 'Imported' %}•••••• {{ v.NationalIDLast4 }}{% else %}<span class="muted">not provided</span>{% endif %}</dd>
+        <dt>Registered</dt><dd>{{ v.RegistrationDate }}</dd><dt>Last sign-in</dt><dd>{{ v.LastLoginAt or '—' }}</dd><dt>Address</dt><dd>{{ v.Address or '—' }}</dd></dl></div>
+    </div>
+    {% if v.VerificationNote %}<div class="notice mt2"><div><b>Note:</b> {{ v.VerificationNote }}{% if v.VerifiedByName %} <span class="muted">— {{ v.VerifiedByName }}, {{ v.VerifiedAt }}</span>{% endif %}</div></div>{% endif %}
+    <hr class="mt2 mb2">
+    <form method="post" action="{{ url_for('officer.voter_photo', vid=v.VoterID) }}" enctype="multipart/form-data">{{ csrf() }}{{ photo_field('newphoto', 'Replace photograph', required=True) }}<button class="btn sm" type="submit">Upload</button></form>
+  </div>
+  <div>
+    <div class="panel"><h3>Verification</h3>
+      {% if suspects %}<div class="notice warn mb2"><div><b>Possible duplicates</b><br>{% for s in suspects %}<a href="{{ url_for('officer.voter_detail', vid=s.VoterID) }}"><u>{{ s.Name }} (#{{ s.VoterID }})</u></a> — {{ s.Reason }}<br>{% endfor %}</div></div>{% endif %}
+      <form method="post" action="{{ url_for('officer.voter_verify', vid=v.VoterID) }}">{{ csrf() }}
+        <div class="field"><label for="note">Note (optional)</label><input id="note" name="note" maxlength="255" placeholder="e.g. photo matches the identity card"></div>
+        <div class="row-gap"><button class="btn accent" name="decision" value="Verified" type="submit">Verify</button><button class="btn ghost" name="decision" value="Flagged" type="submit">Flag</button><button class="btn danger" name="decision" value="Rejected" type="submit">Reject</button><button class="btn ghost" name="decision" value="Pending" type="submit">Reset</button></div></form>
+      {% if v.IdentitySource == 'Imported' or not v.NationalIDLast4 %}
+      <hr class="mt2 mb2"><form method="post" action="{{ url_for('officer.voter_identity', vid=v.VoterID) }}">{{ csrf() }}
+        <div class="field"><label for="idn">Set identity number</label><input id="idn" name="identity_number" required maxlength="14" placeholder="ABC1234567" data-upper></div><button class="btn sm" type="submit">Save</button></form>{% endif %}
+    </div>
+    <div class="panel mt2"><h3>Account</h3>
+      <div class="row-gap">
+        {% if v.AccountStatus == 'Active' %}{{ post_btn(url_for('officer.voter_status', vid=v.VoterID), 'Suspend', 'ghost', 'Suspend this account?', 'status', 'Suspended') }}{% else %}{{ post_btn(url_for('officer.voter_status', vid=v.VoterID), 'Activate', 'ghost', None, 'status', 'Active') }}{% endif %}
+        {% if locked %}{{ post_btn(url_for('officer.voter_unlock', vid=v.VoterID), 'Unlock sign-in (' ~ mins ~ ' min left)', 'accent') }}{% endif %}
+        {{ post_btn(url_for('officer.voter_delete', vid=v.VoterID), 'Delete voter', 'danger', 'Delete this voter permanently? This cannot be undone.') }}
+      </div></div>
+    <div class="panel mt2"><h3>Elections</h3>
+      {% for e in elections %}<div class="check"><div><b>{{ e.ElectionName }}</b><div class="muted tiny">{{ e.ElectionCode }}</div></div><div class="row-gap">{{ tag(e.EligibilityStatus) }}{% if e.HasVoted %}{{ tag('Voted') }}{% endif %}</div></div>{% else %}<p class="muted mb0">Not assigned to any election.</p>{% endfor %}</div>
+  </div>
+</div>
+<div class="panel mt3"><h3>Recent sign-in activity</h3>
+  {% for e in events %}<div class="check"><div>{{ tag(e.EventType) }} <span class="muted tiny">{{ e.Details }}</span></div><span class="muted tiny">{{ e.EventTime }} · {{ e.IpAddress }}</span></div>{% else %}<p class="muted mb0">No activity recorded.</p>{% endfor %}</div>
+{% endblock %}

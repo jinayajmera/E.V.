@@ -1,0 +1,27 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, pagehead %}
+{% block title %}Integrity{% endblock %}
+{% block pagehead %}{% call pagehead('Reliability', 'Data <em>integrity</em>', 'Live self-checks, duplicate watch and a demonstration of safe, all-or-nothing processing.') %}
+  <form method="post" action="{{ url_for('officer.integrity_acid') }}">{{ csrf() }}<button class="btn accent lg" type="submit">Run live transaction demo</button></form>{% endcall %}{% endblock %}
+{% block content %}
+<div class="grid g2 pull">
+  <div class="panel"><div class="ptitle"><h3>Self-checks</h3>{% set bad = checks|selectattr('Violations')|list|length %}<span class="tag {{ 'bad' if bad else 'ok' }}">{{ 'Needs attention' if bad else 'All clear' }}</span></div>
+    {% for c in checks %}<div class="check"><span>{{ c.CheckNo }}. {{ c.CheckName }}</span><span class="tag {{ 'bad' if c.Violations else 'ok' }}">{{ c.Violations }}</span></div>{% endfor %}</div>
+  <div class="panel"><h3>System status</h3>
+    <dl class="kv"><dt>Engine</dt><dd>{{ vars.default_storage_engine }} · v{{ vars.version }}</dd><dt>Isolation</dt><dd>{{ vars.transaction_isolation }}</dd><dt>Durability</dt><dd>flush at commit = {{ vars.innodb_flush_log_at_trx_commit }}</dd></dl>
+    <hr class="mt2 mb2"><div class="tablewrap"><table><thead><tr><th>Table</th><th>Rows (≈)</th><th>Engine</th></tr></thead><tbody>{% for t in tables %}<tr><td>{{ t.name }}</td><td>{{ t.n }}</td><td>{{ t.engine }}</td></tr>{% endfor %}</tbody></table></div></div>
+</div>
+
+{% if suspects %}<div class="panel mt3"><h3>Duplicate watch</h3>
+  {% for s in suspects %}<div class="check"><div><a href="{{ url_for('officer.voter_detail', vid=s.AID) }}"><u>{{ s.AName }} #{{ s.AID }}</u></a> ↔ <a href="{{ url_for('officer.voter_detail', vid=s.BID) }}"><u>{{ s.BName }} #{{ s.BID }}</u></a></div><span class="tag warn">{{ s.Reason }}</span></div>{% endfor %}</div>{% endif %}
+
+{% if demo %}
+<div class="grid g2 mt3">
+{% for d in demo %}
+  <div class="panel"><div class="between mb1"><div class="row-gap"><span class="letter">{{ d.property }}</span><h3 class="mb0">{{ d.title }}</h3></div><span class="tag {{ 'ok' if d.ok else 'bad' }}">{{ 'Passed' if d.ok else 'Failed' }}</span></div>
+    <p class="muted tiny">{{ d.summary }}</p>
+    {% for text, st in d.steps %}<div class="step {{ st }}"><span class="dot">{{ '✓' if st == 'pass' else ('✕' if st == 'fail' else '·') }}</span><span>{{ text }}</span></div>{% endfor %}</div>
+{% endfor %}
+</div>
+<p class="muted tiny mt2">The demonstration uses a separate scratch area, so no election data is touched.</p>
+{% endif %}
+{% endblock %}

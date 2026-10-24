@@ -1,0 +1,71 @@
+{% extends 'base.html' %}{% from '_macros.html' import tag %}
+{% set hero = True %}
+{% block title %}{{ app_name }}{% endblock %}
+{% block fullwidth %}
+<section class="hero">
+  <div class="wrap">
+    {% include '_flashes.html' %}
+    <h1>Your<br>vote</h1>
+    <p class="sub">A secure, transparent way to choose who speaks for you — verified voters, private ballots, public results.</p>
+    <div class="cta">
+      {% if role == 'voter' %}<a class="btn light lg" href="{{ url_for('voter.dashboard') }}">Go to my elections</a>
+      {% elif role == 'officer' %}<a class="btn light lg" href="{{ url_for('officer.dashboard') }}">Open control room</a>
+      {% else %}<a class="btn light lg" href="{{ url_for('main.register') }}">Register to vote</a><a class="btn ghost lg" href="{{ url_for('main.login') }}">Sign in</a>{% endif %}
+    </div>
+  </div>
+  <div class="hero-meta"><div><b>{{ stats.voters }}</b><span>verified voters</span></div><div><b>{{ stats.elections }}</b><span>elections</span></div><div><b>{{ stats.votes }}</b><span>votes counted</span></div></div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <span class="pill">About {{ app_name }}</span>
+    <p class="statement">Voting should feel as simple as it is serious. {{ app_name }} confirms who you are <em>once</em>, lets you choose in private, and publishes <span class="faint">the outcome for everyone to see — nothing hidden, nothing counted twice.</span></p>
+    <div class="cards3">
+      <div class="pcard"><img src="{{ url_for('static', filename='img/card-register.svg') }}" alt=""><span class="num">01</span><div><h3>Register &amp; verify</h3><p>Add your details and photograph. An officer confirms your identity.</p></div></div>
+      <div class="pcard"><img src="{{ url_for('static', filename='img/card-vote.svg') }}" alt=""><span class="num">02</span><div><h3>Vote in private</h3><p>Review your choice, cast it once, keep your receipt.</p></div></div>
+      <div class="pcard"><img src="{{ url_for('static', filename='img/card-results.svg') }}" alt=""><span class="num">03</span><div><h3>See the result</h3><p>Totals are published the moment an election closes.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section dark">
+  <div class="wrap offer">
+    <h2>Here's what <em>we offer.</em></h2>
+    <div class="cols3">
+      <div class="it"><span class="k">one</span><h4>One person, one vote</h4><p>Each voter is tied to a single identity, e-mail, phone number and photograph. Duplicate and look-alike accounts are stopped at registration.</p></div>
+      <div class="it"><span class="k">two</span><h4>Private &amp; protected</h4><p>Strong password protection, automatic lock-out after repeated failures and encrypted sessions keep every account safe.</p></div>
+      <div class="it"><span class="k">three</span><h4>Open, auditable results</h4><p>Every action is recorded. Results are public once the election closes and always add up to the votes cast.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="elections">
+  <div class="wrap">
+    <div class="ptitle"><div><span class="pill">Elections</span><h2 class="mb0 mt2">What's on the <em class="serif">ballot</em></h2></div><a class="btn ghost" href="{{ url_for('main.results_index') }}">All results →</a></div>
+    <div class="grid g3 mt3">
+      {% for e in elections %}
+      <a class="ecard" href="{{ url_for('main.election_public', eid=e.ElectionID) }}">
+        <div class="between">{{ tag(e.Status) }}<span class="muted tiny">{{ e.ElectionCode }}</span></div>
+        <h3>{{ e.ElectionName }}</h3>
+        <div class="meta"><span>{{ e.ElectionType }}</span><span>{{ e.StartDate }} → {{ e.EndDate }}</span></div>
+        <div class="foot"><span>{{ e.ApprovedCandidates }} candidates</span><span>View →</span></div>
+      </a>
+      {% else %}<div class="panel soft center muted span-all">No elections have been announced yet.</div>{% endfor %}
+    </div>
+  </div>
+</section>
+
+{% if featured %}
+<section class="section tight soft">
+  <div class="wrap">
+    <span class="pill">Candidates</span>
+    <div class="grid g3 mt2">
+      {% for c in featured %}
+      <div class="panel flat person pad-sm"><img class="avatar lg" src="{{ url_for('main.media_candidate', cid=c.CandidateID) }}" alt="{{ c.CandidateName }}">
+        <div><b class="fs-lg">{{ c.CandidateName }}</b><small>{{ c.PartyName }}</small><br><small>{{ c.ConstituencyName }}</small></div></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

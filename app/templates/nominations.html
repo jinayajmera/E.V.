@@ -1,0 +1,17 @@
+{% extends 'base.html' %}{% from '_macros.html' import tag, pagehead, post_btn %}
+{% block title %}Nominations{% endblock %}
+{% block pagehead %}{% call pagehead('Candidates', '<em>Nominations</em>', 'Approve or reject candidates for each constituency.') %}<a class="btn accent" href="{{ url_for('officer.nomination_new') }}">+ File nomination</a>{% endcall %}{% endblock %}
+{% block content %}
+<form class="filters pull" method="get">
+  <select name="election" data-autosubmit aria-label="Election"><option value="">All elections</option>{% for e in elections %}<option value="{{ e.ElectionID }}" {% if eid == e.ElectionID %}selected{% endif %}>{{ e.ElectionCode }}</option>{% endfor %}</select>
+  <select name="status" data-autosubmit aria-label="Status"><option value="">Any status</option>{% for s in ['Pending','Approved','Rejected'] %}<option {% if status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+  <button class="btn sm" type="submit">Filter</button>
+</form>
+<div class="tablewrap"><table><thead><tr><th>Candidate</th><th>Election</th><th>Constituency</th><th>Filed</th><th>Status</th><th></th></tr></thead><tbody>
+{% for n in rows %}<tr><td><b>{{ n.CandidateName }}</b><div class="muted tiny">{{ n.PartyName }}</div></td><td>{{ n.ElectionCode }} {{ tag(n.ElectionStatus) }}</td><td>{{ n.ConstituencyName }}</td><td>{{ n.NominationDate }}</td><td>{{ tag(n.Status) }}</td>
+<td><div class="acts">{% if n.ElectionStatus != 'Closed' %}
+  {% if n.Status != 'Approved' %}{{ post_btn(url_for('officer.nomination_status', nid=n.NominationID), 'Approve', 'accent', None, 'status', 'Approved') }}{% endif %}
+  {% if n.Status != 'Rejected' %}{{ post_btn(url_for('officer.nomination_status', nid=n.NominationID), 'Reject', 'ghost', None, 'status', 'Rejected') }}{% endif %}
+  {{ post_btn(url_for('officer.nomination_delete', nid=n.NominationID), 'Delete', 'danger', 'Delete this nomination?') }}{% endif %}</div></td></tr>
+{% else %}<tr><td colspan="6" class="empty">No nominations.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

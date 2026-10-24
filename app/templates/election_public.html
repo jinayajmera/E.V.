@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% from '_macros.html' import tag, pagehead %}
+{% block title %}{{ el.ElectionName }}{% endblock %}
+{% block pagehead %}{% call pagehead(el.ElectionCode ~ ' · ' ~ el.ElectionType, el.ElectionName, el.StartDate|string ~ ' → ' ~ el.EndDate|string) %}
+  {% if el.Status == 'Closed' %}<a class="btn light" href="{{ url_for('main.results', eid=el.ElectionID) }}">View results</a>
+  {% elif el.Status == 'Active' %}<a class="btn accent" href="{{ url_for('voter.dashboard') }}">Vote</a>{% endif %}
+{% endcall %}{% endblock %}
+{% block content %}
+<div class="row-gap pull mb2">{{ tag(el.Status) }}<span class="muted">{{ el.ApprovedCandidates }} approved candidates · {{ el.EligibleVoters }} eligible voters</span></div>
+{% for name, cs in groups.items() %}
+<div class="panel mb2"><div class="ptitle"><h3>{{ name }}</h3><span class="muted tiny">{{ cs|length }} candidates</span></div>
+  <div class="grid g4">{% for c in cs %}
+    <div class="person"><img class="avatar" src="{{ url_for('main.media_candidate', cid=c.CandidateID) }}" alt="{{ c.CandidateName }}"><div><b>{{ c.CandidateName }}</b><small>{{ c.PartyName }}</small></div></div>{% endfor %}</div>
+</div>
+{% else %}<div class="panel soft center muted">Candidates have not been announced yet.</div>{% endfor %}
+{% endblock %}
